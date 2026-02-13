@@ -1,21 +1,20 @@
 from fastapi.testclient import TestClient
 from py_infra_lab.app import app
 
-
-client = TestClient(app)
-
 def test_health():
-    r = client.get("/health")
-    assert r.status_code == 200
-    assert r.json()["status"] == "ok"
+    with TestClient(app) as client:
+        r = client.get("/health")
+        assert r.status_code == 200
+        assert r.json() == {"ok": True}
 
-def test_infer():
-    r = client.post("/v1/infer", json={"text": "hi"})
-    assert r.status_code == 200
-    body = r.json()
-    assert "answer" in body
-    assert body["answer"] == "echo: hi"
+def test_infer_validation_error_wrong_field():
+    with TestClient(app) as client:
+        r = client.post("/infer", json={"text": "hi"})  
+        assert r.status_code == 422
 
-def test_infer_validation_error():
-    r = client.post("/v1/infer", json={"text": ""})
-    assert r.status_code == 422
+def test_infer_ok_schema():
+    with TestClient(app) as client:
+        r = client.post("/infer", json={"prompt": "hi"})
+        assert r.status_code == 200
+        data = r.json()
+        assert "ok" in data

@@ -1,27 +1,26 @@
 from fastapi import FastAPI
-from pydantic import BaseModel, Field
-from py_infra_lab.logic import run_infer
-import logging
+from pydantic import BaseModel
+from .clients import make_async_client
+from .service import InferService
 
+app = FastAPI()
 
-app = FastAPI(title="py-infra-lab")
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(name)s %(message)s",
-)
-log = logging.getLogger("py-infra-lab")
+class InferIn(BaseModel):
+    prompt: str
 
-class InferRequest(BaseModel):
-    text: str = Field(min_length=1, max_length=2000)
+@app.on_event("startup")
+async def on_startup():
+    app.state.http = make_async_client()
+    app.state.svc = InferService(app.state.http)
 
-class InferResponse(BaseModel):
-    answer: str
+@app.on_event("shutdown")
+async def on_shutdown():
+    await app.state.http.aclose()
 
 @app.get("/health")
-def health():
-    return {"status": "ok"}
+async def health():
+    return {"ok": True}
 
-@app.post("/v1/infer", response_model=InferResponse)
-def infer(req: InferRequest):
-    log.info("infer called text_len=%d", len(req.text))
-    return {"answer": run_infer(req.text)}
+@app.post("/infer")
+async def infer(req: InferIn):
+    return await app.state.svc.infer(req.prompt)
