@@ -1,0 +1,56 @@
+# ===== Python bytecode =====
+
+**pycache**/
+*.py[cod]
+*.pyo
+*.pyd
+
+# ===== Virtual environments =====
+
+.venv/
+venv/
+env/
+ENV/
+
+# ===== Environment / secrets (IMPORTANT) =====
+
+.env
+.env.*
+*.env
+*.secret
+*.key
+*.pem
+
+# ===== Logs =====
+
+*.log
+logs/
+
+# ===== Pytest / coverage =====
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ===== Build / packaging =====
+
+build/
+dist/
+*.egg-info/
+
+# ===== IDE / OS junk =====
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ===== Docker local overrides =====
+
+docker-compose.override.yml
+
+# ===== Temporary files =====
+
+*.tmp
+*.bak
+*.swp
